@@ -23,11 +23,10 @@ public static class TechUnlockService
         return list;
     }
 
-    public static void ApplyTechRewards(GameHistoryData history, long ItemId)
+    public static void ApplyTechRewards(GameHistoryData history, int techId)
     {
-        Plugin.BepinLogger.LogDebug($"Unlocking rewards for research id: {ItemId}");
+        Plugin.BepinLogger.LogDebug($"Unlocking rewards for research id: {techId}");
 
-        int techId = (int)ItemId;
         TechProtoPartial techProto = Plugin.APTechProtos.FirstOrDefault(t => t.ID == techId);
 
         if (techProto == null)

@@ -149,7 +149,6 @@ public class ArchipelagoClient
             List<long> locations = TechUnlockService.GetUnlockedTechIds();
             session.Locations.CompleteLocationChecksAsync(locations.ToArray());
             ArchipelagoConsole.LogMessage($"Sent location checks to server!");
-            GoalCheckerService.CheckForGoalCompletion(session, locations);
         }
         else
         {
@@ -169,9 +168,35 @@ public class ArchipelagoClient
 
         Plugin.BepinLogger.LogDebug("Item received with id: " + receivedItem.ItemId);
 
+        int item_id = (int)receivedItem.ItemId;
+
+        if (receivedItem.ItemId > Plugin.GoalItemIDOffset)
+        {
+            session.SetGoalAchieved();
+            item_id -= Plugin.GoalItemIDOffset;
+        }
+
+        if (receivedItem.ItemId > Plugin.ProgressiveItemOffset)
+        {
+            // This is a progressive item
+
+            // Since this is a progressive item, this item id is the id of the base upgrade, offset by Plugin.ProgressiveItemOffset
+            int times_recieved = helper.AllItemsReceived.Where(item_info =>
+            {
+                return item_info.ItemId == item_id;
+            }).Count();
+
+            item_id -= Plugin.ProgressiveItemOffset;
+            // TODO: This assumes that all progressive upgrades will always be sequential tech_ids.
+            // FIXME: Is this correct for the upgrades I currently have as progressive?
+            item_id += times_recieved;
+        }
+        // We have successfullt converted the item_id back to tech_id
+        int tech_id = item_id;
+
         ServerData.Index++;
 
-        TechUnlockService.ApplyTechRewards(GameMain.history, receivedItem.ItemId);
+        TechUnlockService.ApplyTechRewards(GameMain.history, tech_id);
     }
 
     /// <summary>

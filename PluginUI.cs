@@ -81,7 +81,7 @@ namespace DSP_AP
                     Screen.width - buttonWidth,
                     buttonHeight * buttonIndex++ + buttonYStart,
                     buttonWidth, buttonHeight),
-                    "Dump techs"))
+                    "[DEBUG] Dump techs"))
             {
                 TechProtoPartial.DumpAPTechs();
             }
@@ -90,7 +90,7 @@ namespace DSP_AP
                     Screen.width - buttonWidth,
                     buttonHeight * buttonIndex++ + buttonYStart,
                     buttonWidth, buttonHeight),
-                    "Dump recipes"))
+                    "[DEBUG] Dump recipes"))
             {
                 RecipeProtoPartial.DumpRecipes();
             }
