@@ -17,8 +17,22 @@ public static class TechInitializationService
 
                 // Strip original unlock data
                 sourceArray[i].UnlockRecipes = [];
-                sourceArray[i].UnlockFunctions = [];
                 sourceArray[i].AddItems = [];
+
+                if (sourceArray[i].ID >= 2401 && sourceArray[i].ID <= 2407)
+                {
+                    // This is Communication Control
+                    // Due to an issue in the Abnormality Detector, it will throw an index out of bound exceptions if for these technologies do not have the `UnlockFunctions` set
+                    // TODO: Ideally this would not be needed
+                    Assert.Equals(sourceArray[i].UnlockValues.Length, 1);
+                    sourceArray[i].UnlockValues[0] = 0.0;
+                } else
+                {
+                    sourceArray[i].UnlockFunctions = [];
+                }
+            } else
+            {
+                logger.LogError($"source[i] was null??");
             }
         }
 
