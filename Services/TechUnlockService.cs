@@ -1,4 +1,5 @@
 ﻿using DSP_AP.Partials;
+using DSP_AP.Utils;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -56,7 +57,17 @@ public static class TechUnlockService
             int itemId = techProto.AddItems[i];
             int itemCountVal = techProto.AddItemCounts[i];
 
-            // TODO: Add the items
+            int inc = 0;
+            GameMain.mainPlayer.SendItemToPlayer(ref itemId, ref itemCountVal, ref inc, true, new ItemBundle());
+            if (inc != 0)
+            {
+                Plugin.BepinLogger.LogError($"inc not zero after SendItemToPlayer: {inc}");
+            }
+            if (itemCountVal != 0)
+            {
+                Plugin.BepinLogger.LogError($"itemCountVal not zero after SendItemToPlayer: {itemCountVal}");
+            }
+
             // TODO: Set awarded flag to true
         }
 
