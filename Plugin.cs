@@ -28,6 +28,7 @@ namespace DSP_AP
         public static ManualLogSource BepinLogger;
         public static ArchipelagoClient ArchipelagoClient;
         public static string PluginPath;
+        public static bool IsOnLinux;
         public static TechProtoPartial[] APTechProtos;
         public static Plugin Instance;
         #endregion
@@ -36,7 +37,19 @@ namespace DSP_AP
         private void Awake()
         {
             BepinLogger = base.Logger;
+            Plugin.BepinLogger.LogInfo($"Paths.PluginPath: {Paths.PluginPath}");
             PluginPath = Path.Combine(Paths.PluginPath, PluginName);
+
+            if (PluginPath.StartsWith("Z:\\home"))
+            {
+                Plugin.BepinLogger.LogWarning($"Found \\home at the start of the plugin path. Assuming the player is on linux!");
+                PluginPath = PluginPath.Substring("Z:".Length);
+                Plugin.BepinLogger.LogWarning($"Adjusted the plugin path to {PluginPath}");
+                IsOnLinux = true;
+            } else
+            {
+                IsOnLinux = false;
+            }
 
             Harmony harmony = new Harmony(PluginGUID + ".Harmony");
             harmony.PatchAll();

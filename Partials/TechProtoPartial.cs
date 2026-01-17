@@ -44,12 +44,20 @@ namespace DSP_AP.Partials
         public static void DumpAPTechs()
         {
             string filePath = Path.Combine(Plugin.PluginPath, "APTechProtos.json");
+            Plugin.BepinLogger.LogDebug($"filePath: {filePath}");
             foreach (TechProtoPartial proto in Plugin.APTechProtos)
             {
                 proto.Name = Localization.CanTranslate(proto.Name) ? proto.Name.Translate() : proto.Name;
             }
             string json = JsonConvert.SerializeObject(Plugin.APTechProtos, Formatting.Indented);
-            File.WriteAllText(filePath, json);
+            if (Plugin.IsOnLinux)
+            {
+                // FXIME: Due to File.Write failing on linux I just write the json to the log
+                Plugin.BepinLogger.LogInfo($"{json}");
+            } else
+            {
+                File.WriteAllText(filePath, json);
+            }
         }
     }
 }

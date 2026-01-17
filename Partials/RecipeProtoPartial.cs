@@ -46,7 +46,14 @@ namespace DSP_AP.Partials
             }
 
             string json = JsonConvert.SerializeObject(recipes, Formatting.Indented);
-            File.WriteAllText(filePath, json);
+            if (Plugin.IsOnLinux)
+            {
+                // FXIME: Due to File.Write failing on linux I just write the json to the log
+                Plugin.BepinLogger.LogInfo($"{json}");
+            } else
+            {
+                File.WriteAllText(filePath, json);
+            }
         }
     }
 }
