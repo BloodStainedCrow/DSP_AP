@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using UnityEngine.UIElements.Collections;
 
 namespace DSP_AP.Archipelago;
 
@@ -163,8 +164,15 @@ public class ArchipelagoClient
     /// <param name="helper">item helper which we can grab our item from</param>
     private void OnItemReceived(ReceivedItemsHelper helper)
     {
+        if (!GameMain.history.featureValues.ContainsKey(1234567))
+        {
+            GameMain.history.featureValues.Add(1234567, 0);
+        }
+        int Index = GameMain.history.featureValues.Get(1234567);
+
+        Plugin.BepinLogger.LogInfo($"Index: {Index}");
         var receivedItem = helper.DequeueItem();
-        if (helper.Index <= ServerData.Index) return;
+        if (helper.Index <= Index) return;
 
         Plugin.BepinLogger.LogDebug("Item received with id: " + receivedItem.ItemId);
 
@@ -194,7 +202,8 @@ public class ArchipelagoClient
         // We have successfullt converted the item_id back to tech_id
         int tech_id = item_id;
 
-        ServerData.Index++;
+        GameMain.history.featureValues[1234567] = Index + 1;
+        ServerData.Index = Index + 1;        
 
         TechUnlockService.ApplyTechRewards(GameMain.history, tech_id);
     }
