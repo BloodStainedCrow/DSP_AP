@@ -5,7 +5,10 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Packets;
 using DSP_AP.GameLogic;
 using DSP_AP.Utils;
+using HarmonyLib;
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -23,6 +26,8 @@ public class ArchipelagoClient
     #region Static Fields
     public static bool Authenticated;
     public static ArchipelagoData ServerData = new();
+
+    public static ConcurrentQueue<int> channel = new ConcurrentQueue<int>();
     #endregion
 
     #region Instance Fields
@@ -178,13 +183,13 @@ public class ArchipelagoClient
 
         int item_id = (int)receivedItem.ItemId;
 
-        if (receivedItem.ItemId > Plugin.GoalItemIDOffset)
+        if (item_id > Plugin.GoalItemIDOffset)
         {
             session.SetGoalAchieved();
             item_id -= Plugin.GoalItemIDOffset;
         }
 
-        if (receivedItem.ItemId > Plugin.ProgressiveItemOffset)
+        if (item_id > Plugin.ProgressiveItemOffset)
         {
             // This is a progressive item
 
@@ -202,10 +207,26 @@ public class ArchipelagoClient
         // We have successfullt converted the item_id back to tech_id
         int tech_id = item_id;
 
+        Plugin.BepinLogger.LogInfo($"Sent tech_id: {tech_id}");
+        ArchipelagoClient.channel.Enqueue(tech_id);
+            
         GameMain.history.featureValues[1234567] = Index + 1;
-        ServerData.Index = Index + 1;        
+        ServerData.Index = Index + 1;
 
-        TechUnlockService.ApplyTechRewards(GameMain.history, tech_id);
+    }
+    
+    public static void HandleQueue()
+    {
+        if (!GameMain.CurrentThreadIsMainThread())
+        {
+            throw new Exception("WRONG THREAD");
+        }
+        int tech_id = -1;
+        while (ArchipelagoClient.channel.TryDequeue(out tech_id))
+        {
+            Plugin.BepinLogger.LogInfo($"Recieved tech_id: {tech_id}");
+            TechUnlockService.ApplyTechRewards(GameMain.history, tech_id);
+        }
     }
 
     /// <summary>
