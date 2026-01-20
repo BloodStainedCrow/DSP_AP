@@ -45,30 +45,18 @@ public static class TechUnlockService
         int maxLevel = history.techStates[techId].maxLevel;
 
         foreach (int recipe in techProto.UnlockRecipes)
+        {
             history.UnlockRecipe(recipe);
+        }
 
         for (int i = 0; i < techProto.UnlockFunctions.Length; i++)
-            history.UnlockTechFunction(techProto.UnlockFunctions[i], techProto.UnlockValues[i], maxLevel);
-
-        for (int i = 0; i < techProto.AddItems.Length; i++)
         {
-            // TODO: Check whether the items were given out before (awarded flag)
+            history.UnlockTechFunction(techProto.UnlockFunctions[i], techProto.UnlockValues[i], maxLevel);
+        }
 
-            int itemId = techProto.AddItems[i];
-            int itemCountVal = techProto.AddItemCounts[i];
-
-            int inc = 0;
-            GameMain.mainPlayer.SendItemToPlayer(ref itemId, ref itemCountVal, ref inc, true, new ItemBundle());
-            if (inc != 0)
-            {
-                Plugin.BepinLogger.LogError($"inc not zero after SendItemToPlayer: {inc}");
-            }
-            if (itemCountVal != 0)
-            {
-                Plugin.BepinLogger.LogError($"itemCountVal not zero after SendItemToPlayer: {itemCountVal}");
-            }
-
-            // TODO: Set awarded flag to true
+        for (int k = 0; k < techProto.AddItems.Length; k++)
+        {
+            history.GainTechAwards(techProto.AddItems[k], techProto.AddItemCounts[k]);
         }
 
         Plugin.BepinLogger.LogDebug($"Unlocked research rewards for tech ID: {techId}");
