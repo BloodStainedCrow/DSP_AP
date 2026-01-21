@@ -11,7 +11,7 @@ namespace DSP_AP
         public static void DrawModLabel()
         {
             GUI.Label(new Rect(16, 16, 300, 20), Plugin.ModDisplayInfo);
-            GUI.Label(new Rect(16, 32, 300, 20), "Connect only in game!");
+            GUI.Label(new Rect(16, 32, 300, 20), "Connect once you are in game");
             ArchipelagoConsole.OnGUI();
         }
 
@@ -35,7 +35,14 @@ namespace DSP_AP
                 if (GUI.Button(new Rect(16, 130, 100, 20), "Connect") &&
                     !ArchipelagoClient.ServerData.SlotName.IsNullOrWhiteSpace())
                 {
-                    Plugin.ArchipelagoClient.Connect();
+                    // Ensure the player is ingame
+                    if (GameMain.instance != null && !GameMain.instance.isMenuDemo)
+                    {
+                        Plugin.ArchipelagoClient.Connect();
+                    } else
+                    {
+                        ArchipelagoConsole.LogMessage("You may connect once you are ingame!");
+                    }
                 }
             }
         }
