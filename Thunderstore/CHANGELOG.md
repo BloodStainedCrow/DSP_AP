@@ -5,7 +5,7 @@ You can always find all changes between versions on the [GitHub releases page](h
 ### Additions:
 - Added support for progressive upgrades
 ### Fixes:
-- Items awarded by recieved technologies are now correctly added to the players inventory
+- Items awarded by received technologies are now correctly added to the players inventory
 - Reloading a save will now prevent duplicating technology effects
 - Prevent players from connecting unless ingame
 - Prevent error due to incorrect bounds checks in the DSP abnormality checker
