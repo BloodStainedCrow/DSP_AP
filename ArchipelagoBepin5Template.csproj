@@ -4,7 +4,7 @@
         <TargetFramework>net472</TargetFramework>
         <AssemblyName>DSP_AP</AssemblyName>
         <Description>Archipelago client mod for Dyson Sphere Program.</Description>
-        <Version>0.0.1</Version>
+        <Version>0.2.0</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <!-- you may need this for getting the multiclient dll to output for .net 6 and netstandard 2.0 -->
@@ -15,10 +15,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Archipelago.MultiClient.Net" Version="6.6.1" />
-        <PackageReference Include="Archipelago.MultiClient.Net.Analyzers" Version="1.5.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        <PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.0" />
+        <PackageReference Include="Archipelago.MultiClient.Net.Analyzers" Version="2.0.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
         <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
         <PackageReference Include="BepInEx.Core" Version="5.*" />

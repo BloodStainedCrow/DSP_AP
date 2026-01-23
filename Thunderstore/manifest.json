@@ -1,8 +1,8 @@
 {
-  "name": "DSP_AP",
-  "version_number": "0.0.6",
-  "website_url": "https://github.com/FHAUKEM/DSP_AP",
-  "description": "Archipelago mutliworld randomizer client implementation enabling Dyson Sphere Program based Archipelago factories.",
+  "name": "DSPArchipelago",
+  "version_number": "0.2.0",
+  "website_url": "https://github.com/BloodStainedCrow/DSP_AP",
+  "description": "Archipelago multiworld randomizer client implementation enabling Dyson Sphere Program based Archipelago factories. For more information about Archipelago see https://archipelago.gg/",
   "dependencies": [
     "xiaoye97-BepInEx-5.4.17"
   ]

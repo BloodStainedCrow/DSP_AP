@@ -21,13 +21,13 @@ namespace DSP_AP
             if (ArchipelagoClient.Authenticated)
             {
                 statusMessage = " Status: Connected";
-                GUI.Label(new Rect(16, 50, 300, 20), $"Archipelago v{ArchipelagoClient.APVersion}" + statusMessage);
+                GUI.Label(new Rect(16, 50, 300, 20), $"Archipelago" + statusMessage);
                 // Cursor.visible = false; // Uncomment if needed
             }
             else
             {
                 statusMessage = " Status: Disconnected";
-                GUI.Label(new Rect(16, 50, 300, 20), $"Archipelago v{ArchipelagoClient.APVersion}" + statusMessage);
+                GUI.Label(new Rect(16, 50, 300, 20), $"Archipelago" + statusMessage);
 
                 DrawConnectionFields();
 

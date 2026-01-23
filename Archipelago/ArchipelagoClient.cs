@@ -19,7 +19,6 @@ namespace DSP_AP.Archipelago;
 public class ArchipelagoClient
 {
     #region Constants
-    public const string APVersion = "0.6.3";
     private const string Game = "Dyson Sphere Program";
     #endregion
 
@@ -82,7 +81,6 @@ public class ArchipelagoClient
                         Game,
                         ServerData.SlotName,
                         ItemsHandlingFlags.AllItems,
-                        new System.Version(APVersion),
                         password: ServerData.Password,
                         requestSlotData: ServerData.NeedSlotData
                     )));

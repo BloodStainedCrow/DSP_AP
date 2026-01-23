@@ -11,6 +11,7 @@ public class ArchipelagoData
     public string SlotName;
     public string Password;
     public int Index;
+    public Dictionary<string, object> slotData;
     #endregion
 
     #region Private Fields
@@ -19,7 +20,6 @@ public class ArchipelagoData
     /// load is valid to the room it's connecting to.
     /// </summary>
     private string seed;
-    private Dictionary<string, object> slotData;
     #endregion
 
     #region Properties
