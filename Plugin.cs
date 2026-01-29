@@ -15,7 +15,7 @@ namespace DSP_AP
         #region Constants
         public const string PluginGUID = "BloodStainedCrow.DSP.DSP_AP";
         public const string PluginName = "DSP_AP";
-        public const string PluginVersion = "0.2.0";
+        public const string PluginVersion = "0.2.1";
         public const string ModDisplayInfo = $"{PluginName} v{PluginVersion}";
         // This *must* match the constant in the apworld, and should match the constant in TechProto.kMaxProtoId
         public const int GoalItemIDOffset = 12000 * 2;

@@ -1,7 +1,11 @@
 # Changelog
 You can always find all changes between versions on the [GitHub releases page](https://github.com/BloodStainedCrow/DSP_AP/releases).
 
-## v0.2.0 (latest)
+## v0.2.1 (latest)
+### Additions:
+- Added support for Deathlink [more info here](https://archipelago.miraheze.org/wiki/Death_Link)
+
+## v0.2.0
 ### Additions:
 - Added support for progressive upgrades
 ### Fixes:
