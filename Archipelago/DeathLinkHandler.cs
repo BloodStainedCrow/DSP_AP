@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using BepInEx;
+using DSP_AP.Utils;
 
 namespace DSP_AP.Archipelago;
 
 public class DeathLinkHandler
 {
+    public bool deathLinkEnabled;
     #region Private Fields
-    private static bool deathLinkEnabled;
     private string slotName;
     private readonly DeathLinkService service;
     private readonly Queue<DeathLink> deathLinks = new();
@@ -50,34 +51,36 @@ public class DeathLinkHandler
         }
     }
 
-    /// <summary>
-    /// what happens when we receive a deathLink
-    /// </summary>
-    /// <param name="deathLink">Received Death Link object to handle</param>
     private void DeathLinkReceived(DeathLink deathLink)
     {
         deathLinks.Enqueue(deathLink);
 
-        Plugin.BepinLogger.LogDebug(deathLink.Cause.IsNullOrWhiteSpace()
-            ? $"Received Death Link from: {deathLink.Source}"
-            : deathLink.Cause);
+        Plugin.BepinLogger.LogDebug($"Received Death Link from: {deathLink.Source}, with cause {deathLink.Cause}");
     }
 
     /// <summary>
     /// can be called when in a valid state to kill the player, dequeueing and immediately killing the player with a
     /// message if we have a death link in the queue
     /// </summary>
-    public void KillPlayer()
+    public void HandleQueue()
     {
         try
         {
             if (deathLinks.Count < 1) return;
 
+            if (!GameMain.mainPlayer.isAlive)
+            {
+                // It seems the player is already dead or dying
+                return;
+            }
+
             var deathLink = deathLinks.Dequeue();
-            var cause = deathLink.Cause.IsNullOrWhiteSpace() ? GetDeathLinkCause(deathLink) : deathLink.Cause;
 
             //TODO kill the player
-            Plugin.BepinLogger.LogMessage(cause);
+            string cause = deathLink.Cause == null ? "died." : deathLink.Cause;
+            ArchipelagoConsole.LogMessage($"{deathLink.Source} {cause}");
+
+            GameMain.mainPlayer.Kill();
         }
         catch (Exception e)
         {
@@ -86,28 +89,18 @@ public class DeathLinkHandler
     }
 
     /// <summary>
-    /// returns message for the player to see when a death link is received without a cause
-    /// </summary>
-    /// <param name="deathLink">death link object to get relevant info from</param>
-    /// <returns></returns>
-    private string GetDeathLinkCause(DeathLink deathLink)
-    {
-        return $"Received death from {deathLink.Source}";
-    }
-
-    /// <summary>
     /// called to send a death link to the multiworld
     /// </summary>
-    public void SendDeathLink()
+    public void SendDeathLink(string cause = null)
     {
         try
         {
             if (!deathLinkEnabled) return;
 
-            Plugin.BepinLogger.LogMessage("sharing your death...");
+            Plugin.BepinLogger.LogInfo("Sending Deathlink");
+            ArchipelagoConsole.LogMessage("sharing your death...");
 
-            // add the cause here
-            var linkToSend = new DeathLink(slotName);
+            var linkToSend = new DeathLink(slotName, cause);
 
             service.SendDeathLink(linkToSend);
         }

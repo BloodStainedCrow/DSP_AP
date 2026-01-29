@@ -70,7 +70,7 @@ namespace DSP_AP
         {
             if (ArchipelagoConsole.Hidden) return;
 
-            int buttonWidth = 100;
+            int buttonWidth = 150;
             int buttonHeight = 20;
             int buttonYStart = 50;
             int buttonIndex = 0;
@@ -82,6 +82,21 @@ namespace DSP_AP
                     "Disconnect"))
             {
                 Plugin.ArchipelagoClient.Disconnect();
+            }
+
+            string dl_text = Plugin.ArchipelagoClient.DeathLinkHandler != null && Plugin.ArchipelagoClient.DeathLinkHandler.deathLinkEnabled ? "Deathlink Enabled" : "Deathlink Disabled";
+            if (GUI.Button(new Rect(
+                    Screen.width - buttonWidth,
+                    buttonHeight * buttonIndex++ + buttonYStart,
+                    buttonWidth, buttonHeight),
+                    dl_text))
+            {
+                if (Plugin.ArchipelagoClient.DeathLinkHandler != null) {
+                Plugin.ArchipelagoClient.DeathLinkHandler.ToggleDeathLink();
+
+                } else {
+                    ArchipelagoConsole.LogMessage("Connect to Archipelago first!");
+                }
             }
 
             if (GUI.Button(new Rect(
