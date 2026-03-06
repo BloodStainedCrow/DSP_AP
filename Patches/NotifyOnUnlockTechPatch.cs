@@ -13,6 +13,7 @@ namespace DSP_AP.Patches
             Plugin.BepinLogger.LogInfo($"Tech unlocked: {(Localization.CanTranslate(tech.Name) ? tech.Name.Translate() : tech.Name)} ({techId})");
 
             Plugin.ArchipelagoClient.CheckLocationsAsync();
+            Plugin.ArchipelagoClient.ScoutLocationsAsync();
         }
     }
 }

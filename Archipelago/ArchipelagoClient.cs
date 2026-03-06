@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using DSP_AP.GameLogic;
 using DSP_AP.Utils;
@@ -12,6 +13,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine.UIElements.Collections;
 
 namespace DSP_AP.Archipelago;
@@ -27,6 +29,7 @@ public class ArchipelagoClient
     public static ArchipelagoData ServerData = new();
 
     public static ConcurrentQueue<int> channel = new ConcurrentQueue<int>();
+    public static Dictionary<long, ScoutedItemInfo> scoutedTechs = new();
     #endregion
 
     #region Instance Fields
@@ -109,6 +112,7 @@ public class ArchipelagoClient
 
             DeathLinkHandler = new(session.CreateDeathLinkService(), ServerData.SlotName);
             CheckLocationsAsync();
+            ScoutLocationsAsync();
             outText = $"Successfully connected to {ServerData.Uri} as {ServerData.SlotName}!";
 
             ArchipelagoConsole.LogMessage(outText);
@@ -151,7 +155,7 @@ public class ArchipelagoClient
         if (Authenticated)
         {
             List<long> locations = TechUnlockService.GetUnlockedTechIds();
-            session.Locations.CompleteLocationChecksAsync(locations.ToArray());
+            _ = session.Locations.CompleteLocationChecksAsync(locations.ToArray());
             ArchipelagoConsole.LogMessage($"Sent location checks to server!");
         }
         else
@@ -160,6 +164,20 @@ public class ArchipelagoClient
         }
     }
 
+    public async void ScoutLocationsAsync()
+    {
+        if (Authenticated)
+        {
+            long[] locations = TechUnlockService.GetUnlockedOrResearchableTechIds().ToArray();
+            scoutedTechs = await session.Locations.ScoutLocationsAsync(HintCreationPolicy.CreateAndAnnounceOnce, locations);
+            ArchipelagoConsole.LogMessage($"Scouted {scoutedTechs.Keys.Count} techs.");
+            TechUIService.RefreshTechUI();
+        }
+        else
+        {
+            ArchipelagoConsole.LogMessage($"Server not connected. Scouting will happen on next server connect.");
+        }
+    }
 
     /// <summary>
     /// we received an item so reward it here

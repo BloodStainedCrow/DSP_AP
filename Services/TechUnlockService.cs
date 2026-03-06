@@ -24,6 +24,19 @@ public static class TechUnlockService
         return list;
     }
 
+    public static List<long> GetUnlockedOrResearchableTechIds()
+    {
+        List<long> list = new();
+        foreach (KeyValuePair<int, TechState> techStateKVP in GameMain.history.techStates)
+        {
+            int techId = techStateKVP.Key;
+            TechState techState = techStateKVP.Value;
+            if (techState.unlocked || GameMain.history.PreTechUnlocked(techId))
+                list.Add(techId);
+        }
+        return list;
+    }
+
     public static void ApplyTechRewards(GameHistoryData history, int techId)
     {
         Plugin.BepinLogger.LogDebug($"Unlocking rewards for research id: {techId}");
