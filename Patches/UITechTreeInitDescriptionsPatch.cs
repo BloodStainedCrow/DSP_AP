@@ -1,14 +1,13 @@
 ﻿using HarmonyLib;
 
-namespace DSP_AP.Patches
+namespace DSP_AP.Patches;
+
+[HarmonyPatch(typeof(UITechTree), "RefreshTranslate")]
+public class UITechTreeInitDescriptionsPatch
 {
-    [HarmonyPatch(typeof(UITechTree), "RefreshTranslate")]
-    public class UITechTreeInitDescriptionsPatch
+    [HarmonyPostfix]
+    public static void Postfix(UITechTree __instance)
     {
-        [HarmonyPostfix]
-        public static void Postfix(UITechTree __instance)
-        {
-            TechUIService.RefreshTechUI();
-        }
+        TechUIService.RefreshTechUI();
     }
 }

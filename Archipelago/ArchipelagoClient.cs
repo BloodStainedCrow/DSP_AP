@@ -1,4 +1,9 @@
-﻿using Archipelago.MultiClient.Net;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
@@ -6,14 +11,6 @@ using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using DSP_AP.GameLogic;
 using DSP_AP.Utils;
-using HarmonyLib;
-using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine.UIElements.Collections;
 
 namespace DSP_AP.Archipelago;
@@ -44,7 +41,8 @@ public class ArchipelagoClient
     /// <returns></returns>
     public void Connect()
     {
-        if (Authenticated || attemptingConnection) return;
+        if (Authenticated || attemptingConnection)
+            return;
 
         try
         {
@@ -193,7 +191,8 @@ public class ArchipelagoClient
 
         Plugin.BepinLogger.LogInfo($"Index: {Index}");
         var receivedItem = helper.DequeueItem();
-        if (helper.Index <= Index) return;
+        if (helper.Index <= Index)
+            return;
 
         Plugin.BepinLogger.LogDebug("Item received with id: " + receivedItem.ItemId);
 

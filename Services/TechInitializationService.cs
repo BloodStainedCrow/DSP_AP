@@ -1,6 +1,6 @@
-﻿using BepInEx.Logging;
+﻿using System.Linq;
+using BepInEx.Logging;
 using DSP_AP.Partials;
-using System.Linq;
 
 public static class TechInitializationService
 {

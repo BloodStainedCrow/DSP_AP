@@ -1,25 +1,21 @@
-﻿using DSP_AP.Partials;
-using DSP_AP.Utils;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using DSP_AP.Partials;
 
 namespace DSP_AP.GameLogic;
 
 public static class TechUnlockService
 {
-    public static List<long> GetUnlockedTechIds() {
+    public static List<long> GetUnlockedTechIds()
+    {
         var list = new List<long>();
-
         foreach (KeyValuePair<int, TechState> techStateKVP in GameMain.history.techStates)
         {
             int techId = techStateKVP.Key;
             TechState techState = techStateKVP.Value;
             bool unlocked = techState.unlocked;
-
             if (unlocked)
-            {
                 list.Add(techId);
-            }
         }
         return list;
     }

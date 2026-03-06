@@ -39,7 +39,8 @@ namespace DSP_AP
                     if (GameMain.instance != null && !GameMain.instance.isMenuDemo)
                     {
                         Plugin.ArchipelagoClient.Connect();
-                    } else
+                    }
+                    else
                     {
                         ArchipelagoConsole.LogMessage("You may connect once you are ingame!");
                     }
@@ -68,7 +69,8 @@ namespace DSP_AP
 
         public static void DrawDebugButtons()
         {
-            if (ArchipelagoConsole.Hidden) return;
+            if (ArchipelagoConsole.Hidden)
+                return;
 
             int buttonWidth = 150;
             int buttonHeight = 20;
@@ -91,10 +93,13 @@ namespace DSP_AP
                     buttonWidth, buttonHeight),
                     dl_text))
             {
-                if (Plugin.ArchipelagoClient.DeathLinkHandler != null) {
-                Plugin.ArchipelagoClient.DeathLinkHandler.ToggleDeathLink();
+                if (Plugin.ArchipelagoClient.DeathLinkHandler != null)
+                {
+                    Plugin.ArchipelagoClient.DeathLinkHandler.ToggleDeathLink();
 
-                } else {
+                }
+                else
+                {
                     ArchipelagoConsole.LogMessage("Connect to Archipelago first!");
                 }
             }

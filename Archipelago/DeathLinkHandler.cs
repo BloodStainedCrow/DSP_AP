@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
-using BepInEx;
 using DSP_AP.Utils;
 
 namespace DSP_AP.Archipelago;
@@ -66,7 +65,8 @@ public class DeathLinkHandler
     {
         try
         {
-            if (deathLinks.Count < 1) return;
+            if (deathLinks.Count < 1)
+                return;
 
             if (!GameMain.mainPlayer.isAlive)
             {
@@ -95,7 +95,8 @@ public class DeathLinkHandler
     {
         try
         {
-            if (!deathLinkEnabled) return;
+            if (!deathLinkEnabled)
+                return;
 
             Plugin.BepinLogger.LogInfo("Sending Deathlink");
             ArchipelagoConsole.LogMessage("sharing your death...");

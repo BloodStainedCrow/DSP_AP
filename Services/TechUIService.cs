@@ -1,8 +1,7 @@
-﻿using Archipelago.MultiClient.Net.Enums;
+﻿using System.Collections.Generic;
+using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Models;
 using DSP_AP.Archipelago;
-using DSP_AP.Utils;
-using System.Collections.Generic;
 using UnityEngine.UI;
 
 public static class TechUIService

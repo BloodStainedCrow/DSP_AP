@@ -1,11 +1,10 @@
-﻿using BepInEx;
+﻿using System.IO;
+using BepInEx;
 using BepInEx.Logging;
 using DSP_AP.Archipelago;
 using DSP_AP.Partials;
 using DSP_AP.Utils;
 using HarmonyLib;
-using System.IO;
-using System.Linq;
 
 namespace DSP_AP
 {
@@ -32,7 +31,6 @@ namespace DSP_AP
         public static Plugin Instance;
         #endregion
 
-
         private void Awake()
         {
             BepinLogger = base.Logger;
@@ -45,7 +43,8 @@ namespace DSP_AP
                 PluginPath = PluginPath.Substring("Z:".Length);
                 Plugin.BepinLogger.LogWarning($"Adjusted the plugin path to {PluginPath}");
                 IsOnLinux = true;
-            } else
+            }
+            else
             {
                 IsOnLinux = false;
             }
