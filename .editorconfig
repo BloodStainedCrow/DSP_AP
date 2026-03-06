@@ -1,12 +1,12 @@
 root = true
 
-[{.editorconfig,.gitignore,*.{config,json,lock,md,nix}}]
+[{.editorconfig,.gitignore,*.{config,json,lock,md,nix,scm}}]
 charset = utf-8
 
 [*.{cs,csproj,sln}]
 charset = utf-8-bom
 
-[{.editorconfig,.gitignore,*.{config,cs,csproj,json,lock,md,nix,sln}}]
+[{.editorconfig,.gitignore,*.{config,cs,csproj,json,lock,md,nix,scm,sln}}]
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
@@ -22,3 +22,6 @@ indent_size = 4
 [*.sln]
 indent_style = tab
 indent_size = 4
+
+[*.scm]
+indent_style = space
