@@ -9,10 +9,7 @@ namespace DSP_AP.Patches
         [HarmonyPostfix]
         public static void Postfix(Mecha __instance)
         {
-            if (Plugin.ArchipelagoClient.DeathLinkHandler != null)
-            {
-                Plugin.ArchipelagoClient.DeathLinkHandler.HandleQueue();
-            }
+            Plugin.ArchipelagoClient?.DeathLinkHandler?.HandleQueue();
         }
     }
 }
