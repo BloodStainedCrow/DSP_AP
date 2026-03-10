@@ -103,7 +103,7 @@ public static class ArchipelagoConsole
                 scrollText += logLines.ElementAt(i);
                 if (i < logLines.Count - 1)
                 {
-                    scrollText += "\n\n";
+                    scrollText += "\n";
                 }
             }
         }
