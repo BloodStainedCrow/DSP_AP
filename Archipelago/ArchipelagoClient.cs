@@ -111,8 +111,6 @@ public class ArchipelagoClient
             CheckLocationsAsync();
             ScoutLocationsAsync();
             outText = $"Successfully connected to {ServerData.Uri} as {ServerData.SlotName}!";
-
-            ArchipelagoConsole.LogMessage(outText);
         }
         else
         {
