@@ -2,11 +2,12 @@
 
 namespace DSP_AP.Patches;
 
-[HarmonyPatch(typeof(Mecha), "TakeDamage")]
-public class SendDeathLinkPatch
+[HarmonyPatch(typeof(Mecha))]
+public class MechaPatches
 {
+    [HarmonyPatch("TakeDamage")]
     [HarmonyPostfix]
-    public static void Postfix(Mecha __instance)
+    public static void TakeDamagePostfix(Mecha __instance)
     {
         if (__instance.hp <= 0)
         {
@@ -16,5 +17,12 @@ public class SendDeathLinkPatch
                 Plugin.ArchipelagoClient.DeathLinkHandler.SendDeathLink("could not handle the Dark Fog.");
             }
         }
+    }
+
+    [HarmonyPatch("UpdateCombatStats")]
+    [HarmonyPostfix]
+    public static void UpdateCombatStatsPostfix(Mecha __instance)
+    {
+        Plugin.ArchipelagoClient?.DeathLinkHandler?.HandleQueue();
     }
 }
