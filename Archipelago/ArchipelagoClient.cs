@@ -217,7 +217,7 @@ public class ArchipelagoClient
             item_id -= Plugin.ProgressiveItemOffset;
             // TODO: This assumes that all progressive upgrades will always be sequential tech_ids.
             // FIXME: Is this correct for the upgrades I currently have as progressive?
-            item_id += times_recieved;
+            item_id += (times_recieved - 1);
         }
         // We have successfullt converted the item_id back to tech_id
         int tech_id = item_id;
