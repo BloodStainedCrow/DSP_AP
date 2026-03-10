@@ -55,7 +55,7 @@ namespace DSP_AP
 
             ArchipelagoClient = new ArchipelagoClient();
             ArchipelagoConsole.Awake();
-            APTechProtos = TechInitializationService.CreateTechProtos(BepinLogger);
+            APTechProtos = TechInitializationService.CreateTechProtos();
 
             ArchipelagoConsole.LogMessage($"{ModDisplayInfo} loaded!");
         }

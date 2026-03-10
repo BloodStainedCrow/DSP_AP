@@ -250,7 +250,7 @@ public class ArchipelagoClient
         while (ArchipelagoClient.Channel.TryDequeue(out techId))
         {
             Plugin.BepinLogger.LogInfo($"Dequeued techId: {techId}");
-            TechUnlockService.ApplyTechRewards(GameMain.history, techId);
+            TechUnlockService.ApplyTechRewards(techId);
         }
     }
 

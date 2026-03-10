@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using DSP_AP.Partials;
 
 namespace DSP_AP.Services;
 
 public static class TechUnlockService
 {
+    public static bool DoTrueUnlock = false;
+
     public static List<long> GetUnlockedTechIds()
     {
         var list = new List<long>();
@@ -33,41 +33,42 @@ public static class TechUnlockService
         return list;
     }
 
-    public static void ApplyTechRewards(GameHistoryData history, int techId)
+    public static void ApplyTechRewards(int techId)
     {
-        Plugin.BepinLogger.LogDebug($"Unlocking rewards for research id: {techId}");
+        Plugin.BepinLogger.LogInfo($"Unlocking rewards for tech id: {techId}");
 
-        TechProtoPartial techProto = Plugin.APTechProtos.FirstOrDefault(t => t.ID == techId);
-
-        if (techProto == null)
-        {
-            Plugin.BepinLogger.LogInfo($"Partial copy of TechProto not found for id {techId}");
-            return;
-        }
+        GameHistoryData history = GameMain.history;
 
         if (!history.techStates.ContainsKey(techId))
         {
-            Plugin.BepinLogger.LogDebug($"No techstate found for id {techId}");
+            Plugin.BepinLogger.LogWarning($"No Techstate found for id {techId}");
+            return;
+        }
+        TechState techState = history.techStates[techId];
+
+        TechProto techProto = LDB.techs.Select(techId);
+        if (techProto == null)
+        {
+            Plugin.BepinLogger.LogWarning($"No TechProto found for id {techId}");
             return;
         }
 
-        int maxLevel = history.techStates[techId].maxLevel;
-
-        foreach (int recipe in techProto.UnlockRecipes)
+        try
         {
-            history.UnlockRecipe(recipe);
+            DoTrueUnlock = true;
+            for (int i = 0; i < techProto.UnlockRecipes.Length; i++)
+                history.UnlockRecipe(techProto.UnlockRecipes[i]);
+            for (int i = 0; i < techProto.UnlockFunctions.Length; i++)
+                history.UnlockTechFunction(techProto.UnlockFunctions[i], techProto.UnlockValues[i], techState.maxLevel);
+            for (int i = 0; i < techProto.AddItems.Length; i++)
+                history.GainTechAwards(techProto.AddItems[i], techProto.AddItemCounts[i]);
+            history.NotifyTechUnlock(techId, techState.maxLevel);
+        }
+        finally
+        {
+            DoTrueUnlock = false;
         }
 
-        for (int i = 0; i < techProto.UnlockFunctions.Length; i++)
-        {
-            history.UnlockTechFunction(techProto.UnlockFunctions[i], techProto.UnlockValues[i], maxLevel);
-        }
-
-        for (int k = 0; k < techProto.AddItems.Length; k++)
-        {
-            history.GainTechAwards(techProto.AddItems[k], techProto.AddItemCounts[k]);
-        }
-
-        Plugin.BepinLogger.LogDebug($"Unlocked research rewards for tech ID: {techId}");
+        Plugin.BepinLogger.LogInfo($"Unlocked research rewards for tech id: {techId}");
     }
 }
