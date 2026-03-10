@@ -24,9 +24,9 @@ public class ArchipelagoClient
     #region Static Fields
     public static bool Authenticated;
     public static ArchipelagoData ServerData = new();
-
-    public static ConcurrentQueue<int> channel = new ConcurrentQueue<int>();
-    public static Dictionary<long, ScoutedItemInfo> scoutedTechs = new();
+    public static ConcurrentQueue<int> Channel = new();
+    public static Dictionary<long, ItemInfo> ReceivedTechs = new();
+    public static Dictionary<long, ScoutedItemInfo> ScoutedTechs = new();
     #endregion
 
     #region Instance Fields
@@ -140,8 +140,9 @@ public class ArchipelagoClient
 
         Authenticated = false;
         ServerData = new();
-        channel = new();
-        scoutedTechs = new();
+        Channel = new();
+        ReceivedTechs = new();
+        ScoutedTechs = new();
         DeathLinkHandler = null;
         attemptingConnection = false;
         session = null;
@@ -171,9 +172,9 @@ public class ArchipelagoClient
         if (Authenticated)
         {
             long[] locations = TechUnlockService.GetUnlockedOrResearchableTechIds().ToArray();
-            scoutedTechs = await session.Locations.ScoutLocationsAsync(HintCreationPolicy.CreateAndAnnounceOnce, locations);
-            ArchipelagoConsole.LogMessage($"Scouted {scoutedTechs.Keys.Count} techs.");
-            TechUIService.RefreshTechUI();
+            ScoutedTechs = await session.Locations.ScoutLocationsAsync(HintCreationPolicy.CreateAndAnnounceOnce, locations);
+            ArchipelagoConsole.LogMessage($"Scouted {ScoutedTechs.Keys.Count} techs.");
+            TechUIService.RefreshUITechTree();
         }
         else
         {
@@ -188,64 +189,68 @@ public class ArchipelagoClient
     private void OnItemReceived(ReceivedItemsHelper helper)
     {
         if (!GameMain.history.featureValues.ContainsKey(1234567))
-        {
             GameMain.history.featureValues.Add(1234567, 0);
-        }
         int Index = GameMain.history.featureValues.Get(1234567);
+        Plugin.BepinLogger.LogInfo($"Index local/remote: {Index}/{helper.Index}");
 
-        Plugin.BepinLogger.LogInfo($"Index: {Index}");
-        var receivedItem = helper.DequeueItem();
-        if (helper.Index <= Index)
-            return;
+        ItemInfo receivedItem = helper.DequeueItem();
+        bool newItem = Index <= helper.Index;
+        Plugin.BepinLogger.LogInfo($"Item received with id: {receivedItem.ItemId} ({(newItem ? "new" : "historic")}) ({receivedItem.ItemDisplayName})");
 
-        Plugin.BepinLogger.LogDebug("Item received with id: " + receivedItem.ItemId);
-
-        int item_id = (int)receivedItem.ItemId;
-
-        if (item_id > Plugin.GoalItemIDOffset)
+        int itemId = (int)receivedItem.ItemId;
+        if (itemId > Plugin.GoalItemIDOffset)
         {
-            session.SetGoalAchieved();
-            item_id -= Plugin.GoalItemIDOffset;
+            if (newItem)
+                session.SetGoalAchieved();
+            itemId -= Plugin.GoalItemIDOffset;
         }
-
-        if (item_id > Plugin.ProgressiveItemOffset)
+        if (itemId > Plugin.ProgressiveItemOffset)
         {
             // This is a progressive item.
 
             // Since this is a progressive item, this item id is the id of the base upgrade, offset by Plugin.ProgressiveItemOffset.
-            int times_recieved = helper.AllItemsReceived.Where(item_info =>
-            {
-                return item_info.ItemId == item_id;
-            }).Count();
+            int timesReceived = helper
+                .AllItemsReceived
+                .Where(itemInfo => itemInfo.ItemId == itemId)
+                .Count();
 
-            item_id -= Plugin.ProgressiveItemOffset;
-            // TODO: This assumes that all progressive upgrades will always be sequential tech_ids.
+            itemId -= Plugin.ProgressiveItemOffset;
+            // TODO: This assumes that all progressive upgrades will always be sequential techIds.
             // FIXME: Is this correct for the upgrades I currently have as progressive?
-            item_id += (times_recieved - 1);
+            itemId += (timesReceived - 1);
         }
-        // We have successfully converted the item_id back to tech_id.
-        int tech_id = item_id;
+        // We have successfully converted the itemId back to techId.
+        int techId = itemId;
+        Plugin.BepinLogger.LogInfo($"Mapped item id {receivedItem.ItemId} to tech id {techId}");
 
-        Plugin.BepinLogger.LogInfo($"Sent tech_id: {tech_id}");
-        ArchipelagoClient.channel.Enqueue(tech_id);
+        ReceivedTechs[techId] = receivedItem;
 
-        // FIXME: This can be a race condition if the game is saved/exited before this tech is applied, we will still not add it later
-        GameMain.history.featureValues[1234567] = Index + 1;
-        ServerData.Index = Index + 1;
+        if (newItem)
+        {
+            Plugin.BepinLogger.LogInfo($"Received {receivedItem.ItemDisplayName}, enqueueing unlock...");
+            ArchipelagoClient.Channel.Enqueue(techId);
 
+            // FIXME: This can be a race condition if the game is saved/exited before this tech is applied, we will still not add it later.
+            GameMain.history.featureValues[1234567] = Index + 1;
+            ServerData.Index = Index + 1;
+        }
+        else
+        {
+            Plugin.BepinLogger.LogInfo($"Item {receivedItem.ItemDisplayName} has already been received, skipping...");
+        }
     }
 
     public static void HandleQueue()
     {
         if (!GameMain.CurrentThreadIsMainThread())
         {
-            throw new Exception("WRONG THREAD");
+            throw new Exception("HandleQueue wasn't called from the main thread");
         }
-        int tech_id = -1;
-        while (ArchipelagoClient.channel.TryDequeue(out tech_id))
+        int techId = -1;
+        while (ArchipelagoClient.Channel.TryDequeue(out techId))
         {
-            Plugin.BepinLogger.LogInfo($"Recieved tech_id: {tech_id}");
-            TechUnlockService.ApplyTechRewards(GameMain.history, tech_id);
+            Plugin.BepinLogger.LogInfo($"Dequeued techId: {techId}");
+            TechUnlockService.ApplyTechRewards(GameMain.history, techId);
         }
     }
 
@@ -261,7 +266,8 @@ public class ArchipelagoClient
         session = null;
         Authenticated = false;
         attemptingConnection = false;
-        scoutedTechs = new();
+        ReceivedTechs = new();
+        ScoutedTechs = new();
     }
 
     /// <summary>
