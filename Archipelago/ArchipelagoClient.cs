@@ -131,14 +131,20 @@ public class ArchipelagoClient
 
     /// <summary>
     /// Something went wrong, or we need to properly disconnect from the server.
-    /// Cleanup and re-null our session.
+    /// Cleanup and re-null our session and all other fields.
     /// </summary>
     public void Disconnect()
     {
         Plugin.BepinLogger.LogDebug("Disconnecting from server...");
         session?.Socket.DisconnectAsync();
-        session = null;
+
         Authenticated = false;
+        ServerData = new();
+        channel = new();
+        scoutedTechs = new();
+        DeathLinkHandler = null;
+        attemptingConnection = false;
+        session = null;
     }
 
     public void SendMessage(string message)
@@ -255,6 +261,7 @@ public class ArchipelagoClient
         session = null;
         Authenticated = false;
         attemptingConnection = false;
+        scoutedTechs = new();
     }
 
     /// <summary>
