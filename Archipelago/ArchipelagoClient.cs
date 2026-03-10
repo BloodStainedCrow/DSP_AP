@@ -99,32 +99,33 @@ public class ArchipelagoClient
     /// </summary>
     private void HandleConnectResult(LoginResult result)
     {
-        string outText;
         if (result.Successful)
         {
-            var success = (LoginSuccessful)result;
+            LoginSuccessful success = (LoginSuccessful)result;
+
+            string outText = $"Successfully connected to {ServerData.Uri} as {ServerData.SlotName}!";
+            Plugin.BepinLogger.LogInfo(outText);
+            ArchipelagoConsole.LogMessage(outText);
 
             ServerData.SetupSession(success.SlotData, session.RoomState.Seed);
             Authenticated = true;
-
             DeathLinkHandler = new(session.CreateDeathLinkService(), ServerData.SlotName);
             CheckLocationsAsync();
             ScoutLocationsAsync();
-            outText = $"Successfully connected to {ServerData.Uri} as {ServerData.SlotName}!";
         }
         else
         {
-            var failure = (LoginFailure)result;
-            outText = $"Failed to connect to {ServerData.Uri} as {ServerData.SlotName}.";
-            outText = failure.Errors.Aggregate(outText, (current, error) => current + $"\n    {error}");
+            LoginFailure failure = (LoginFailure)result;
 
+            string outText = $"Failed to connect to {ServerData.Uri} as {ServerData.SlotName}.";
+            outText = failure.Errors.Aggregate(outText, (current, error) => current + $"\n    {error}");
             Plugin.BepinLogger.LogError(outText);
+            ArchipelagoConsole.LogMessage(outText);
 
             Authenticated = false;
             Disconnect();
         }
 
-        ArchipelagoConsole.LogMessage(outText);
         attemptingConnection = false;
     }
 
