@@ -9,7 +9,7 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using DSP_AP.GameLogic;
+using DSP_AP.Services;
 using DSP_AP.Utils;
 using UnityEngine.UIElements.Collections;
 

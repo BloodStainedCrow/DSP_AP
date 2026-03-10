@@ -2,7 +2,7 @@
 using System.Linq;
 using DSP_AP.Partials;
 
-namespace DSP_AP.GameLogic;
+namespace DSP_AP.Services;
 
 public static class TechUnlockService
 {

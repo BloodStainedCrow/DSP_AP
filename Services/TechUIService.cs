@@ -4,6 +4,8 @@ using Archipelago.MultiClient.Net.Models;
 using DSP_AP.Archipelago;
 using UnityEngine.UI;
 
+namespace DSP_AP.Services;
+
 public static class TechUIService
 {
     public static void RefreshTechUI()

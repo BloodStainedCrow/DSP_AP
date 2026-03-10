@@ -2,6 +2,8 @@
 using BepInEx.Logging;
 using DSP_AP.Partials;
 
+namespace DSP_AP.Services;
+
 public static class TechInitializationService
 {
     public static TechProtoPartial[] CreateTechProtos(ManualLogSource logger)

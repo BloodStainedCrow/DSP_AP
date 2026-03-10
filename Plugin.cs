@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Logging;
 using DSP_AP.Archipelago;
 using DSP_AP.Partials;
+using DSP_AP.Services;
 using DSP_AP.Utils;
 using HarmonyLib;
 
