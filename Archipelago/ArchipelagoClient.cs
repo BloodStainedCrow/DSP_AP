@@ -36,9 +36,9 @@ public class ArchipelagoClient
     #endregion
 
     /// <summary>
-    /// call to connect to an Archipelago session. Connection info should already be set up on ServerData
+    /// Call to connect to an Archipelago session.
+    /// Connection info should already be set up on ServerData.
     /// </summary>
-    /// <returns></returns>
     public void Connect()
     {
         if (Authenticated || attemptingConnection)
@@ -58,7 +58,7 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// add handlers for Archipelago events
+    /// Add handlers for Archipelago events.
     /// </summary>
     private void SetupSession()
     {
@@ -69,13 +69,13 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// attempt to connect to the server with our connection info
+    /// Attempt to connect to the server with our connection info.
     /// </summary>
     private void TryConnect()
     {
         try
         {
-            // it's safe to thread this function call but unity notoriously hates threading so do not use excessively
+            // It's safe to thread this function call but unity notoriously hates threading so do not use excessively.
             ThreadPool.QueueUserWorkItem(
                 _ => HandleConnectResult(
                     session.TryConnectAndLogin(
@@ -95,9 +95,8 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// handle the connection result and do things
+    /// Handle the connection result and do things.
     /// </summary>
-    /// <param name="result"></param>
     private void HandleConnectResult(LoginResult result)
     {
         string outText;
@@ -132,11 +131,12 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// something went wrong, or we need to properly disconnect from the server. cleanup and re null our session
+    /// Something went wrong, or we need to properly disconnect from the server.
+    /// Cleanup and re-null our session.
     /// </summary>
     public void Disconnect()
     {
-        Plugin.BepinLogger.LogDebug("disconnecting from server...");
+        Plugin.BepinLogger.LogDebug("Disconnecting from server...");
         session?.Socket.DisconnectAsync();
         session = null;
         Authenticated = false;
@@ -146,7 +146,6 @@ public class ArchipelagoClient
     {
         session.Socket.SendPacketAsync(new SayPacket { Text = message });
     }
-
 
     public void CheckLocationsAsync()
     {
@@ -178,9 +177,9 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// we received an item so reward it here
+    /// We received an item so reward it here.
     /// </summary>
-    /// <param name="helper">item helper which we can grab our item from</param>
+    /// <param name="helper">Item helper which we can grab our item from.</param>
     private void OnItemReceived(ReceivedItemsHelper helper)
     {
         if (!GameMain.history.featureValues.ContainsKey(1234567))
@@ -206,9 +205,9 @@ public class ArchipelagoClient
 
         if (item_id > Plugin.ProgressiveItemOffset)
         {
-            // This is a progressive item
+            // This is a progressive item.
 
-            // Since this is a progressive item, this item id is the id of the base upgrade, offset by Plugin.ProgressiveItemOffset
+            // Since this is a progressive item, this item id is the id of the base upgrade, offset by Plugin.ProgressiveItemOffset.
             int times_recieved = helper.AllItemsReceived.Where(item_info =>
             {
                 return item_info.ItemId == item_id;
@@ -219,7 +218,7 @@ public class ArchipelagoClient
             // FIXME: Is this correct for the upgrades I currently have as progressive?
             item_id += (times_recieved - 1);
         }
-        // We have successfullt converted the item_id back to tech_id
+        // We have successfully converted the item_id back to tech_id.
         int tech_id = item_id;
 
         Plugin.BepinLogger.LogInfo($"Sent tech_id: {tech_id}");
@@ -246,10 +245,10 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// something went wrong with our socket connection
+    /// Something went wrong with our socket connection.
     /// </summary>
-    /// <param name="e">thrown exception from our socket</param>
-    /// <param name="message">message received from the server</param>
+    /// <param name="e">Thrown exception from our socket.</param>
+    /// <param name="message">Message received from the server.</param>
     private void OnSessionErrorReceived(Exception e, string message)
     {
         Plugin.BepinLogger.LogError(e);
@@ -260,9 +259,9 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// something went wrong closing our connection. disconnect and clean up
+    /// Something went wrong closing our connection.
+    /// Disconnect and clean up.
     /// </summary>
-    /// <param name="reason"></param>
     private void OnSessionSocketClosed(string reason)
     {
         Plugin.BepinLogger.LogError($"Connection to Archipelago lost: {reason}");
