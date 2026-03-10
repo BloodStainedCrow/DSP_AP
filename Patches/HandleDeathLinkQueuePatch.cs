@@ -1,4 +1,4 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 using DSP_AP.Archipelago;
 
 namespace DSP_AP.Patches

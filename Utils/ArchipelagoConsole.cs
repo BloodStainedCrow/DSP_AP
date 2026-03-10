@@ -69,7 +69,7 @@ public static class ArchipelagoConsole
             Hidden = !Hidden;
             UpdateWindow();
         }
-        
+
         // draw client/server commands entry
         if (Hidden || !ArchipelagoClient.Authenticated) return;
 

@@ -207,13 +207,13 @@ public class ArchipelagoClient
 
         Plugin.BepinLogger.LogInfo($"Sent tech_id: {tech_id}");
         ArchipelagoClient.channel.Enqueue(tech_id);
-            
+
         // FIXME: This can be a race condition if the game is saved/exited before this tech is applied, we will still not add it later
         GameMain.history.featureValues[1234567] = Index + 1;
         ServerData.Index = Index + 1;
 
     }
-    
+
     public static void HandleQueue()
     {
         if (!GameMain.CurrentThreadIsMainThread())
