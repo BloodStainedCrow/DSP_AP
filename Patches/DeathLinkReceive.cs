@@ -20,7 +20,9 @@ public class UIDeathPanelPatches
     [HarmonyPostfix]
     public static void DeterminePostfix(UIDeathPanel __instance)
     {
-        __instance._Close();
+        // Prevent respawn ui from showing when DeathLink is enabled.
+        if (Plugin.ArchipelagoClient?.DeathLinkHandler.deathLinkEnabled ?? true)
+            __instance._Close();
     }
 }
 
