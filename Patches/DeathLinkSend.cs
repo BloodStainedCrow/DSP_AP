@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 
-namespace DSP_AP.Patches;
+namespace DSP_AP.Patches.DeathLinkSend;
 
 [HarmonyPatch(typeof(Mecha))]
 public class MechaPatches
@@ -9,7 +9,7 @@ public class MechaPatches
     private const double sendDeathLinkCooldown = 10.0d;
     private static double lastDeathLinkSentTimestamp = 0.0d;
 
-    [HarmonyPatch("TakeDamage")]
+    [HarmonyPatch(nameof(Mecha.TakeDamage))]
     [HarmonyPostfix]
     public static void TakeDamagePostfix(Mecha __instance)
     {
@@ -25,7 +25,7 @@ public class MechaPatches
         }
     }
 
-    [HarmonyPatch("UpdateCombatStats")]
+    [HarmonyPatch(nameof(Mecha.UpdateCombatStats))]
     [HarmonyPostfix]
     public static void UpdateCombatStatsPostfix(Mecha __instance)
     {
