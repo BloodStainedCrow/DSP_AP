@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using DSP_AP.Utils;
+using UnityEngine;
 
 namespace DSP_AP.Archipelago;
 
@@ -79,11 +81,18 @@ public class DeathLinkHandler
 
             // This will not send out a DeathLink.
             GameMain.mainPlayer.Kill();
+            GameMain.mainPlayer.controller.StartCoroutine(DelayedRedeploy(2.50f));
         }
         catch (Exception e)
         {
             Plugin.BepinLogger.LogError(e);
         }
+    }
+
+    private static IEnumerator DelayedRedeploy(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        GameMain.mainPlayer.controller.actionDeath.Respawn(3);
     }
 
     /// <summary>

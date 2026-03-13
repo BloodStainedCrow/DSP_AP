@@ -11,3 +11,14 @@ public class HandleDeathLinkQueuePatch
         Plugin.ArchipelagoClient?.DeathLinkHandler?.HandleQueue();
     }
 }
+
+[HarmonyPatch(typeof(UIDeathPanel))]
+public class UIDeathPanelPatches
+{
+    [HarmonyPatch(nameof(UIDeathPanel.Determine))]
+    [HarmonyPostfix]
+    public static void DeterminePostfix(UIDeathPanel __instance)
+    {
+        __instance._Close();
+    }
+}
