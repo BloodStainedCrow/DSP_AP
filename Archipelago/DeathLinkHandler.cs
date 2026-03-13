@@ -21,7 +21,7 @@ public class DeathLinkHandler
     /// </summary>
     /// <param name="deathLinkService">The new DeathLinkService that our handler will use to send and receive death links.</param>
     /// <param name="enableDeathLink">Whether we should enable death link or not on startup.</param>
-    public DeathLinkHandler(DeathLinkService deathLinkService, string name, bool enableDeathLink = false)
+    public DeathLinkHandler(DeathLinkService deathLinkService, string name, bool enableDeathLink)
     {
         service = deathLinkService;
         service.OnDeathLinkReceived += DeathLinkReceived;

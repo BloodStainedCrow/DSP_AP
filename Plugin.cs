@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using DSP_AP.Archipelago;
 using DSP_AP.Partials;
@@ -28,6 +29,10 @@ namespace DSP_AP
         public static ArchipelagoClient ArchipelagoClient;
         public static string PluginPath;
         public static bool IsOnLinux;
+        public static ConfigEntry<string> ConfigDefaultsHost;
+        public static ConfigEntry<string> ConfigDefaultsSlot;
+        public static ConfigEntry<string> ConfigDefaultsPassword;
+        public static ConfigEntry<bool> ConfigDefaultsDeathLinkEnabled;
         public static TechProtoPartial[] APTechProtos;
         public static Plugin Instance;
         #endregion
@@ -49,6 +54,11 @@ namespace DSP_AP
             {
                 IsOnLinux = false;
             }
+
+            Plugin.ConfigDefaultsHost = Config.Bind("Defaults", "Host", "localhost", "The URI of the Archipelago server");
+            Plugin.ConfigDefaultsSlot = Config.Bind("Defaults", "Slot", "Player1", "The player name used for connecting");
+            Plugin.ConfigDefaultsPassword = Config.Bind("Defaults", "Password", "", "The password used for connecting");
+            Plugin.ConfigDefaultsDeathLinkEnabled = Config.Bind("Defaults", "DeathLinkEnabled", false, "Whether to enable DeathLink by default");
 
             Harmony harmony = new Harmony(PluginGUID + ".Harmony");
             harmony.PatchAll();

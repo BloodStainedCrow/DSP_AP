@@ -23,10 +23,10 @@ public class ArchipelagoClient
 
     #region Static Fields
     public static bool Authenticated;
-    public static ArchipelagoData ServerData = new();
-    public static ConcurrentQueue<int> Channel = new();
-    public static Dictionary<long, ItemInfo> ReceivedTechs = new();
-    public static Dictionary<long, ScoutedItemInfo> ScoutedTechs = new();
+    public static ArchipelagoData ServerData;
+    public static ConcurrentQueue<int> Channel;
+    public static Dictionary<long, ItemInfo> ReceivedTechs;
+    public static Dictionary<long, ScoutedItemInfo> ScoutedTechs;
     #endregion
 
     #region Instance Fields
@@ -34,6 +34,19 @@ public class ArchipelagoClient
     private bool attemptingConnection;
     private ArchipelagoSession session;
     #endregion
+
+    public ArchipelagoClient()
+    {
+        ArchipelagoClient.Authenticated = false;
+        ArchipelagoClient.ServerData = new(
+            uri: Plugin.ConfigDefaultsHost.Value,
+            slotName: Plugin.ConfigDefaultsSlot.Value,
+            password: Plugin.ConfigDefaultsPassword.Value
+        );
+        ArchipelagoClient.Channel = new();
+        ArchipelagoClient.ReceivedTechs = new();
+        ArchipelagoClient.ScoutedTechs = new();
+    }
 
     /// <summary>
     /// Call to connect to an Archipelago session.
@@ -109,7 +122,11 @@ public class ArchipelagoClient
 
             ServerData.SetupSession(success.SlotData, session.RoomState.Seed);
             Authenticated = true;
-            DeathLinkHandler = new(session.CreateDeathLinkService(), ServerData.SlotName);
+            DeathLinkHandler = new(
+                deathLinkService: session.CreateDeathLinkService(),
+                name: ServerData.SlotName,
+                enableDeathLink: Plugin.ConfigDefaultsDeathLinkEnabled.Value
+            );
             CheckLocationsAsync();
             ScoutLocationsAsync();
         }
@@ -139,7 +156,11 @@ public class ArchipelagoClient
         session?.Socket.DisconnectAsync();
 
         Authenticated = false;
-        ServerData = new();
+        ArchipelagoClient.ServerData = new(
+            uri: ServerData.Uri,
+            slotName: ServerData.SlotName,
+            password: ServerData.Password
+        );
         Channel = new();
         ReceivedTechs = new();
         ScoutedTechs = new();

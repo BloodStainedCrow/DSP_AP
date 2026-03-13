@@ -25,12 +25,6 @@ public class ArchipelagoData
     public bool NeedSlotData => slotData == null;
     #endregion
 
-    public ArchipelagoData()
-    {
-        Uri = "localhost";
-        SlotName = "Player1";
-    }
-
     public ArchipelagoData(string uri, string slotName, string password)
     {
         Uri = uri;
