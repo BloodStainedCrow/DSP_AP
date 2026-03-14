@@ -34,6 +34,7 @@ namespace DSP_AP
         public static ConfigEntry<string> ConfigDefaultsPassword;
         public static ConfigEntry<bool> ConfigDefaultsDeathLinkEnabled;
         public static TechProtoPartial[] APTechProtos;
+        public static bool RefreshTechTree;
         public static Plugin Instance;
         #endregion
 
@@ -67,6 +68,8 @@ namespace DSP_AP
             ArchipelagoConsole.Awake();
             APTechProtos = TechInitializationService.CreateTechProtos();
 
+            RefreshTechTree = true;
+
             ArchipelagoConsole.LogMessage($"{ModDisplayInfo} loaded!");
         }
 
@@ -75,6 +78,12 @@ namespace DSP_AP
             PluginUI.DrawModLabel();
             PluginUI.DrawStatusUI();
             PluginUI.DrawDebugButtons();
+
+            if (RefreshTechTree)
+            {
+                RefreshTechTree = false;
+                TechUIService.RefreshUITechTree();
+            }
         }
     }
 }

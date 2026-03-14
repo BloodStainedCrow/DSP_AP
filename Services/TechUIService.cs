@@ -15,6 +15,12 @@ public static class TechUIService
 
     public static void RefreshUITechTree(UITechTree tree = null)
     {
+        if (!Plugin.CurrentThreadIsMainThread())
+        {
+            Plugin.RefreshTechTree = true;
+            return;
+        }
+
         if (tree == null)
             tree = UIRoot.instance?.uiGame?.techTree;
         if (tree == null)
@@ -30,6 +36,12 @@ public static class TechUIService
 
     public static void RefreshUITechNode(UITechNode node, bool updateDescription)
     {
+        if (!Plugin.CurrentThreadIsMainThread())
+        {
+            Plugin.RefreshTechTree = true;
+            return;
+        }
+
         if (node == null)
             return;
 
