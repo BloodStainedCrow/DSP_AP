@@ -17,7 +17,7 @@ public class MechaPatches
         {
             // The player is dead
             double now = Time.realtimeSinceStartupAsDouble;
-            if (Plugin.ArchipelagoClient.DeathLinkHandler != null && now - lastDeathLinkSentTimestamp > sendDeathLinkCooldown)
+            if (Plugin.ArchipelagoClient?.DeathLinkHandler != null && now - lastDeathLinkSentTimestamp > sendDeathLinkCooldown)
             {
                 lastDeathLinkSentTimestamp = now;
                 Plugin.ArchipelagoClient.DeathLinkHandler.SendDeathLink("could not handle the Dark Fog.");

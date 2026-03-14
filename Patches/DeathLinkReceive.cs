@@ -21,7 +21,7 @@ public class UIDeathPanelPatches
     public static void DeterminePostfix(UIDeathPanel __instance)
     {
         // Prevent respawn ui from showing when DeathLink is enabled.
-        if (Plugin.ArchipelagoClient?.DeathLinkHandler.deathLinkEnabled ?? true)
+        if (Plugin.ArchipelagoClient?.DeathLinkHandler?.deathLinkEnabled ?? true)
             __instance._Close();
     }
 }
@@ -34,7 +34,7 @@ public class PlayerPackageUtilityPatches
     public static bool ThrowAllItemsInAllPackagePrefix()
     {
         // Don't drop inventory when DeathLink is enabled.
-        return !Plugin.ArchipelagoClient?.DeathLinkHandler.deathLinkEnabled ?? true;
+        return !Plugin.ArchipelagoClient?.DeathLinkHandler?.deathLinkEnabled ?? true;
     }
 }
 [HarmonyPatch(typeof(PlayerAction_Death))]
@@ -45,6 +45,6 @@ public class PlayerAction_DeathPatches
     public static bool SettleRespawnCostPrefix()
     {
         // Disable respawn costs when DeathLink is enabled.
-        return !Plugin.ArchipelagoClient?.DeathLinkHandler.deathLinkEnabled ?? true;
+        return !Plugin.ArchipelagoClient?.DeathLinkHandler?.deathLinkEnabled ?? true;
     }
 }
