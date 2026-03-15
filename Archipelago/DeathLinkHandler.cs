@@ -79,13 +79,16 @@ public class DeathLinkHandler
             string cause = deathLink.Cause == null ? "died." : deathLink.Cause;
             ArchipelagoConsole.LogMessage($"{deathLink.Source} {cause}");
 
-            // This will not send out a DeathLink.
-            GameMain.mainPlayer.Kill();
-            GameMain.mainPlayer.controller.StartCoroutine(DelayedRedeploy(2.50f));
         }
         catch (Exception e)
         {
             Plugin.BepinLogger.LogError(e);
+        }
+        finally
+        {
+            // This will not send out a DeathLink.
+            GameMain.mainPlayer.Kill();
+            GameMain.mainPlayer.controller.StartCoroutine(DelayedRedeploy(2.50f));
         }
     }
 
@@ -114,6 +117,10 @@ public class DeathLinkHandler
         catch (Exception e)
         {
             Plugin.BepinLogger.LogError(e);
+        }
+        finally
+        {
+            GameMain.mainPlayer.controller.StartCoroutine(DelayedRedeploy(2.50f));
         }
     }
 }
