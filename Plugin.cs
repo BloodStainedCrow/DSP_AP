@@ -1,11 +1,12 @@
-﻿using BepInEx;
+﻿using System.IO;
+using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using DSP_AP.Archipelago;
 using DSP_AP.Partials;
+using DSP_AP.Services;
 using DSP_AP.Utils;
 using HarmonyLib;
-using System.IO;
-using System.Linq;
 
 namespace DSP_AP
 {
@@ -28,10 +29,14 @@ namespace DSP_AP
         public static ArchipelagoClient ArchipelagoClient;
         public static string PluginPath;
         public static bool IsOnLinux;
+        public static ConfigEntry<string> ConfigDefaultsHost;
+        public static ConfigEntry<string> ConfigDefaultsSlot;
+        public static ConfigEntry<string> ConfigDefaultsPassword;
+        public static ConfigEntry<bool> ConfigDefaultsDeathLinkEnabled;
         public static TechProtoPartial[] APTechProtos;
+        public static bool RefreshTechTree;
         public static Plugin Instance;
         #endregion
-
 
         private void Awake()
         {
@@ -45,17 +50,25 @@ namespace DSP_AP
                 PluginPath = PluginPath.Substring("Z:".Length);
                 Plugin.BepinLogger.LogWarning($"Adjusted the plugin path to {PluginPath}");
                 IsOnLinux = true;
-            } else
+            }
+            else
             {
                 IsOnLinux = false;
             }
+
+            Plugin.ConfigDefaultsHost = Config.Bind("Defaults", "Host", "localhost", "The URI of the Archipelago server");
+            Plugin.ConfigDefaultsSlot = Config.Bind("Defaults", "Slot", "Player1", "The player name used for connecting");
+            Plugin.ConfigDefaultsPassword = Config.Bind("Defaults", "Password", "", "The password used for connecting");
+            Plugin.ConfigDefaultsDeathLinkEnabled = Config.Bind("Defaults", "DeathLinkEnabled", false, "Whether to enable DeathLink by default");
 
             Harmony harmony = new Harmony(PluginGUID + ".Harmony");
             harmony.PatchAll();
 
             ArchipelagoClient = new ArchipelagoClient();
             ArchipelagoConsole.Awake();
-            APTechProtos = TechInitializationService.CreateTechProtos(BepinLogger);
+            APTechProtos = TechInitializationService.CreateTechProtos();
+
+            RefreshTechTree = true;
 
             ArchipelagoConsole.LogMessage($"{ModDisplayInfo} loaded!");
         }
@@ -65,6 +78,12 @@ namespace DSP_AP
             PluginUI.DrawModLabel();
             PluginUI.DrawStatusUI();
             PluginUI.DrawDebugButtons();
+
+            if (RefreshTechTree)
+            {
+                RefreshTechTree = false;
+                TechUIService.RefreshUITechTree();
+            }
         }
     }
 }

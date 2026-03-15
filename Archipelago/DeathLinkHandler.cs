@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
-using BepInEx;
 using DSP_AP.Utils;
+using UnityEngine;
 
 namespace DSP_AP.Archipelago;
 
@@ -16,12 +17,11 @@ public class DeathLinkHandler
     #endregion
 
     /// <summary>
-    /// instantiates our death link handler, sets up the hook for receiving death links, and enables death link if needed
+    /// Instantiates our death link handler, sets up the hook for receiving death links, and enables death link if needed.
     /// </summary>
-    /// <param name="deathLinkService">The new DeathLinkService that our handler will use to send and
-    /// receive death links</param>
-    /// <param name="enableDeathLink">Whether we should enable death link or not on startup</param>
-    public DeathLinkHandler(DeathLinkService deathLinkService, string name, bool enableDeathLink = false)
+    /// <param name="deathLinkService">The new DeathLinkService that our handler will use to send and receive death links.</param>
+    /// <param name="enableDeathLink">Whether we should enable death link or not on startup.</param>
+    public DeathLinkHandler(DeathLinkService deathLinkService, string name, bool enableDeathLink)
     {
         service = deathLinkService;
         service.OnDeathLinkReceived += DeathLinkReceived;
@@ -35,7 +35,7 @@ public class DeathLinkHandler
     }
 
     /// <summary>
-    /// enables/disables death link
+    /// Enables/disables death link.
     /// </summary>
     public void ToggleDeathLink()
     {
@@ -59,54 +59,68 @@ public class DeathLinkHandler
     }
 
     /// <summary>
-    /// can be called when in a valid state to kill the player, dequeueing and immediately killing the player with a
-    /// message if we have a death link in the queue
+    /// Can be called when in a valid state to kill the player, dequeueing and immediately killing the player with a message if we have a death link in the queue.
     /// </summary>
     public void HandleQueue()
     {
         try
         {
-            if (deathLinks.Count < 1) return;
+            if (deathLinks.Count < 1)
+                return;
 
             if (!GameMain.mainPlayer.isAlive)
             {
-                // It seems the player is already dead or dying
+                // It seems the player is already dead or dying.
                 return;
             }
 
             var deathLink = deathLinks.Dequeue();
 
-            //TODO kill the player
             string cause = deathLink.Cause == null ? "died." : deathLink.Cause;
             ArchipelagoConsole.LogMessage($"{deathLink.Source} {cause}");
 
-            GameMain.mainPlayer.Kill();
         }
         catch (Exception e)
         {
             Plugin.BepinLogger.LogError(e);
         }
+        finally
+        {
+            // This will not send out a DeathLink.
+            GameMain.mainPlayer.Kill();
+            GameMain.mainPlayer.controller.StartCoroutine(DelayedRedeploy(2.50f));
+        }
+    }
+
+    private static IEnumerator DelayedRedeploy(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        GameMain.mainPlayer.controller.actionDeath.Respawn(3);
     }
 
     /// <summary>
-    /// called to send a death link to the multiworld
+    /// Called to send a death link to the multiworld.
     /// </summary>
     public void SendDeathLink(string cause = null)
     {
         try
         {
-            if (!deathLinkEnabled) return;
+            if (!deathLinkEnabled)
+                return;
 
             Plugin.BepinLogger.LogInfo("Sending Deathlink");
-            ArchipelagoConsole.LogMessage("sharing your death...");
+            ArchipelagoConsole.LogMessage("Sharing your death...");
 
             var linkToSend = new DeathLink(slotName, cause);
-
             service.SendDeathLink(linkToSend);
         }
         catch (Exception e)
         {
             Plugin.BepinLogger.LogError(e);
+        }
+        finally
+        {
+            GameMain.mainPlayer.controller.StartCoroutine(DelayedRedeploy(2.50f));
         }
     }
 }

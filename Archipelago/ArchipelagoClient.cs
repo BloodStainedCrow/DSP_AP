@@ -1,17 +1,16 @@
-﻿using Archipelago.MultiClient.Net;
-using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
-using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Helpers;
-using Archipelago.MultiClient.Net.Packets;
-using DSP_AP.GameLogic;
-using DSP_AP.Utils;
-using HarmonyLib;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Archipelago.MultiClient.Net;
+using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
+using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
+using Archipelago.MultiClient.Net.Packets;
+using DSP_AP.Services;
+using DSP_AP.Utils;
 using UnityEngine.UIElements.Collections;
 
 namespace DSP_AP.Archipelago;
@@ -24,9 +23,10 @@ public class ArchipelagoClient
 
     #region Static Fields
     public static bool Authenticated;
-    public static ArchipelagoData ServerData = new();
-
-    public static ConcurrentQueue<int> channel = new ConcurrentQueue<int>();
+    public static ArchipelagoData ServerData;
+    public static ConcurrentQueue<int> Channel;
+    public static Dictionary<long, ItemInfo> ReceivedTechs;
+    public static Dictionary<long, ScoutedItemInfo> ScoutedTechs;
     #endregion
 
     #region Instance Fields
@@ -35,13 +35,27 @@ public class ArchipelagoClient
     private ArchipelagoSession session;
     #endregion
 
+    public ArchipelagoClient()
+    {
+        ArchipelagoClient.Authenticated = false;
+        ArchipelagoClient.ServerData = new(
+            uri: Plugin.ConfigDefaultsHost.Value,
+            slotName: Plugin.ConfigDefaultsSlot.Value,
+            password: Plugin.ConfigDefaultsPassword.Value
+        );
+        ArchipelagoClient.Channel = new();
+        ArchipelagoClient.ReceivedTechs = new();
+        ArchipelagoClient.ScoutedTechs = new();
+    }
+
     /// <summary>
-    /// call to connect to an Archipelago session. Connection info should already be set up on ServerData
+    /// Call to connect to an Archipelago session.
+    /// Connection info should already be set up on ServerData.
     /// </summary>
-    /// <returns></returns>
     public void Connect()
     {
-        if (Authenticated || attemptingConnection) return;
+        if (Authenticated || attemptingConnection)
+            return;
 
         try
         {
@@ -57,7 +71,7 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// add handlers for Archipelago events
+    /// Add handlers for Archipelago events.
     /// </summary>
     private void SetupSession()
     {
@@ -68,13 +82,13 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// attempt to connect to the server with our connection info
+    /// Attempt to connect to the server with our connection info.
     /// </summary>
     private void TryConnect()
     {
         try
         {
-            // it's safe to thread this function call but unity notoriously hates threading so do not use excessively
+            // It's safe to thread this function call but unity notoriously hates threading so do not use excessively.
             ThreadPool.QueueUserWorkItem(
                 _ => HandleConnectResult(
                     session.TryConnectAndLogin(
@@ -94,50 +108,65 @@ public class ArchipelagoClient
     }
 
     /// <summary>
-    /// handle the connection result and do things
+    /// Handle the connection result and do things.
     /// </summary>
-    /// <param name="result"></param>
     private void HandleConnectResult(LoginResult result)
     {
-        string outText;
         if (result.Successful)
         {
-            var success = (LoginSuccessful)result;
+            LoginSuccessful success = (LoginSuccessful)result;
+
+            string outText = $"Successfully connected to {ServerData.Uri} as {ServerData.SlotName}!";
+            Plugin.BepinLogger.LogInfo(outText);
+            ArchipelagoConsole.LogMessage(outText);
 
             ServerData.SetupSession(success.SlotData, session.RoomState.Seed);
             Authenticated = true;
-
-            DeathLinkHandler = new(session.CreateDeathLinkService(), ServerData.SlotName);
+            DeathLinkHandler = new(
+                deathLinkService: session.CreateDeathLinkService(),
+                name: ServerData.SlotName,
+                enableDeathLink: Plugin.ConfigDefaultsDeathLinkEnabled.Value
+            );
             CheckLocationsAsync();
-            outText = $"Successfully connected to {ServerData.Uri} as {ServerData.SlotName}!";
-
-            ArchipelagoConsole.LogMessage(outText);
+            ScoutLocationsAsync();
         }
         else
         {
-            var failure = (LoginFailure)result;
-            outText = $"Failed to connect to {ServerData.Uri} as {ServerData.SlotName}.";
-            outText = failure.Errors.Aggregate(outText, (current, error) => current + $"\n    {error}");
+            LoginFailure failure = (LoginFailure)result;
 
+            string outText = $"Failed to connect to {ServerData.Uri} as {ServerData.SlotName}.";
+            outText = failure.Errors.Aggregate(outText, (current, error) => current + $"\n    {error}");
             Plugin.BepinLogger.LogError(outText);
+            ArchipelagoConsole.LogMessage(outText);
 
             Authenticated = false;
             Disconnect();
         }
 
-        ArchipelagoConsole.LogMessage(outText);
         attemptingConnection = false;
     }
 
     /// <summary>
-    /// something went wrong, or we need to properly disconnect from the server. cleanup and re null our session
+    /// Something went wrong, or we need to properly disconnect from the server.
+    /// Cleanup and re-null our session and all other fields.
     /// </summary>
     public void Disconnect()
     {
-        Plugin.BepinLogger.LogDebug("disconnecting from server...");
+        Plugin.BepinLogger.LogDebug("Disconnecting from server...");
         session?.Socket.DisconnectAsync();
-        session = null;
+
         Authenticated = false;
+        ArchipelagoClient.ServerData = new(
+            uri: ServerData.Uri,
+            slotName: ServerData.SlotName,
+            password: ServerData.Password
+        );
+        Channel = new();
+        ReceivedTechs = new();
+        ScoutedTechs = new();
+        DeathLinkHandler = null;
+        attemptingConnection = false;
+        session = null;
     }
 
     public void SendMessage(string message)
@@ -145,13 +174,12 @@ public class ArchipelagoClient
         session.Socket.SendPacketAsync(new SayPacket { Text = message });
     }
 
-
     public void CheckLocationsAsync()
     {
         if (Authenticated)
         {
             List<long> locations = TechUnlockService.GetUnlockedTechIds();
-            session.Locations.CompleteLocationChecksAsync(locations.ToArray());
+            _ = session.Locations.CompleteLocationChecksAsync(locations.ToArray());
             ArchipelagoConsole.LogMessage($"Sent location checks to server!");
         }
         else
@@ -160,79 +188,98 @@ public class ArchipelagoClient
         }
     }
 
+    public async void ScoutLocationsAsync()
+    {
+        if (Authenticated)
+        {
+            long[] locations = TechUnlockService.GetUnlockedOrResearchableTechIds().ToArray();
+            ScoutedTechs = await session.Locations.ScoutLocationsAsync(HintCreationPolicy.CreateAndAnnounceOnce, locations);
+            ArchipelagoConsole.LogMessage($"Scouted {ScoutedTechs.Keys.Count} techs.");
+            TechUIService.RefreshUITechTree();
+        }
+        else
+        {
+            ArchipelagoConsole.LogMessage($"Server not connected. Scouting will happen on next server connect.");
+        }
+    }
 
     /// <summary>
-    /// we received an item so reward it here
+    /// We received an item so reward it here.
     /// </summary>
-    /// <param name="helper">item helper which we can grab our item from</param>
+    /// <param name="helper">Item helper which we can grab our item from.</param>
     private void OnItemReceived(ReceivedItemsHelper helper)
     {
         if (!GameMain.history.featureValues.ContainsKey(1234567))
-        {
             GameMain.history.featureValues.Add(1234567, 0);
-        }
         int Index = GameMain.history.featureValues.Get(1234567);
+        Plugin.BepinLogger.LogInfo($"Index local/remote: {Index}/{helper.Index}");
 
-        Plugin.BepinLogger.LogInfo($"Index: {Index}");
-        var receivedItem = helper.DequeueItem();
-        if (helper.Index <= Index) return;
+        ItemInfo receivedItem = helper.DequeueItem();
+        bool newItem = Index <= helper.Index;
+        Plugin.BepinLogger.LogInfo($"Item received with id: {receivedItem.ItemId} ({(newItem ? "new" : "historic")}) ({receivedItem.ItemDisplayName})");
 
-        Plugin.BepinLogger.LogDebug("Item received with id: " + receivedItem.ItemId);
-
-        int item_id = (int)receivedItem.ItemId;
-
-        if (item_id > Plugin.GoalItemIDOffset)
+        int itemId = (int)receivedItem.ItemId;
+        if (itemId > Plugin.GoalItemIDOffset)
         {
-            session.SetGoalAchieved();
-            item_id -= Plugin.GoalItemIDOffset;
+            if (newItem)
+                session.SetGoalAchieved();
+            itemId -= Plugin.GoalItemIDOffset;
         }
-
-        if (item_id > Plugin.ProgressiveItemOffset)
+        if (itemId > Plugin.ProgressiveItemOffset)
         {
-            // This is a progressive item
+            // This is a progressive item.
 
-            // Since this is a progressive item, this item id is the id of the base upgrade, offset by Plugin.ProgressiveItemOffset
-            int times_recieved = helper.AllItemsReceived.Where(item_info =>
-            {
-                return item_info.ItemId == item_id;
-            }).Count();
+            // Since this is a progressive item, this item id is the id of the base upgrade, offset by Plugin.ProgressiveItemOffset.
+            int timesReceived = helper
+                .AllItemsReceived
+                .Where(itemInfo => itemInfo.ItemId == itemId)
+                .Count();
 
-            item_id -= Plugin.ProgressiveItemOffset;
-            // TODO: This assumes that all progressive upgrades will always be sequential tech_ids.
+            itemId -= Plugin.ProgressiveItemOffset;
+            // TODO: This assumes that all progressive upgrades will always be sequential techIds.
             // FIXME: Is this correct for the upgrades I currently have as progressive?
-            item_id += times_recieved;
+            itemId += (timesReceived - 1);
         }
-        // We have successfullt converted the item_id back to tech_id
-        int tech_id = item_id;
+        // We have successfully converted the itemId back to techId.
+        int techId = itemId;
+        Plugin.BepinLogger.LogInfo($"Mapped item id {receivedItem.ItemId} to tech id {techId}");
 
-        Plugin.BepinLogger.LogInfo($"Sent tech_id: {tech_id}");
-        ArchipelagoClient.channel.Enqueue(tech_id);
-            
-        // FIXME: This can be a race condition if the game is saved/exited before this tech is applied, we will still not add it later
-        GameMain.history.featureValues[1234567] = Index + 1;
-        ServerData.Index = Index + 1;
+        ReceivedTechs[techId] = receivedItem;
 
+        if (newItem)
+        {
+            Plugin.BepinLogger.LogInfo($"Received {receivedItem.ItemDisplayName}, enqueueing unlock...");
+            ArchipelagoClient.Channel.Enqueue(techId);
+
+            // FIXME: This can be a race condition if the game is saved/exited before this tech is applied, we will still not add it later.
+            GameMain.history.featureValues[1234567] = Index + 1;
+            ServerData.Index = Index + 1;
+        }
+        else
+        {
+            Plugin.BepinLogger.LogInfo($"Item {receivedItem.ItemDisplayName} has already been received, skipping...");
+        }
     }
-    
+
     public static void HandleQueue()
     {
         if (!GameMain.CurrentThreadIsMainThread())
         {
-            throw new Exception("WRONG THREAD");
+            throw new Exception("HandleQueue wasn't called from the main thread");
         }
-        int tech_id = -1;
-        while (ArchipelagoClient.channel.TryDequeue(out tech_id))
+        int techId = -1;
+        while (ArchipelagoClient.Channel.TryDequeue(out techId))
         {
-            Plugin.BepinLogger.LogInfo($"Recieved tech_id: {tech_id}");
-            TechUnlockService.ApplyTechRewards(GameMain.history, tech_id);
+            Plugin.BepinLogger.LogInfo($"Dequeued techId: {techId}");
+            TechUnlockService.ApplyTechRewards(techId);
         }
     }
 
     /// <summary>
-    /// something went wrong with our socket connection
+    /// Something went wrong with our socket connection.
     /// </summary>
-    /// <param name="e">thrown exception from our socket</param>
-    /// <param name="message">message received from the server</param>
+    /// <param name="e">Thrown exception from our socket.</param>
+    /// <param name="message">Message received from the server.</param>
     private void OnSessionErrorReceived(Exception e, string message)
     {
         Plugin.BepinLogger.LogError(e);
@@ -240,12 +287,14 @@ public class ArchipelagoClient
         session = null;
         Authenticated = false;
         attemptingConnection = false;
+        ReceivedTechs = new();
+        ScoutedTechs = new();
     }
 
     /// <summary>
-    /// something went wrong closing our connection. disconnect and clean up
+    /// Something went wrong closing our connection.
+    /// Disconnect and clean up.
     /// </summary>
-    /// <param name="reason"></param>
     private void OnSessionSocketClosed(string reason)
     {
         Plugin.BepinLogger.LogError($"Connection to Archipelago lost: {reason}");

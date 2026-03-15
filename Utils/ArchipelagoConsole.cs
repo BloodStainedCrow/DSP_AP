@@ -40,7 +40,8 @@ public static class ArchipelagoConsole
 
     public static void LogMessage(string message)
     {
-        if (message.IsNullOrWhiteSpace()) return;
+        if (message.IsNullOrWhiteSpace())
+            return;
 
         if (logLines.Count == MaxLogLines)
         {
@@ -54,7 +55,8 @@ public static class ArchipelagoConsole
 
     public static void OnGUI()
     {
-        if (logLines.Count == 0) return;
+        if (logLines.Count == 0)
+            return;
 
         if (!Hidden || Time.time - lastUpdateTime < HideTimeout)
         {
@@ -69,9 +71,10 @@ public static class ArchipelagoConsole
             Hidden = !Hidden;
             UpdateWindow();
         }
-        
+
         // draw client/server commands entry
-        if (Hidden || !ArchipelagoClient.Authenticated) return;
+        if (Hidden || !ArchipelagoClient.Authenticated)
+            return;
 
         CommandText = GUI.TextField(CommandTextRect, CommandText);
         if (!CommandText.IsNullOrWhiteSpace() && GUI.Button(SendCommandButton, "Send"))
@@ -100,7 +103,7 @@ public static class ArchipelagoConsole
                 scrollText += logLines.ElementAt(i);
                 if (i < logLines.Count - 1)
                 {
-                    scrollText += "\n\n";
+                    scrollText += "\n";
                 }
             }
         }
